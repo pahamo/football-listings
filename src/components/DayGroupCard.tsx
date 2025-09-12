@@ -3,12 +3,12 @@ import React, { forwardRef } from 'react';
 interface DayGroupCardProps {
   id: string;
   date: string;
-  time: string;
+  matchweek?: number;
   children: React.ReactNode;
 }
 
 const DayGroupCard = forwardRef<HTMLDivElement, DayGroupCardProps>(
-  ({ id, date, time, children }, ref) => {
+  ({ id, date, matchweek, children }, ref) => {
     return (
       <div
         ref={ref}
@@ -39,7 +39,7 @@ const DayGroupCard = forwardRef<HTMLDivElement, DayGroupCardProps>(
           }}
         >
           <span>{date}</span>
-          <span>{time}</span>
+          <span>{matchweek ? `Matchweek ${matchweek}` : ''}</span>
         </div>
 
         {/* Fixture Cards */}

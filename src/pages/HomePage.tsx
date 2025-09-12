@@ -57,9 +57,14 @@ const groupFixturesByDate = (fixtures: SimpleFixture[]) => {
       return aTime.getTime() - bTime.getTime();
     });
 
+    // Get matchweek from the first fixture (they should all be the same matchweek for a given day in this context)
+    const firstFixture = timeSlots[0].fixtures[0];
+    const matchweek = firstFixture.matchweek;
+
     return {
       date,
       timeSlots,
+      matchweek,
       // For sticky header - use most common time or first time
       commonTime: timeSlots.length === 1 ? timeSlots[0].time : 'Multiple times'
     };
@@ -254,34 +259,6 @@ const HomePage: React.FC = () => {
       <main>
         <div className="wrap" style={{ position: 'relative' }}>
           <h1 style={{ marginTop: 0 }}>Premier League TV Schedule (UK)</h1>
-          
-          {/* Simplified Fixture Grouping Bar */}
-          <div 
-            style={{ 
-              background: matchWeek.hasToday ? '#f8fafc' : '#fafaf9', 
-              border: '1px solid #e2e8f0',
-              borderRadius: '6px', 
-              padding: '10px 14px', 
-              marginBottom: '16px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              fontSize: '13px'
-            }}
-          >
-            <span style={{ 
-              color: '#64748b',
-              fontWeight: '500'
-            }}>
-              {matchWeek.dateRange}
-            </span>
-            <span style={{ 
-              color: '#64748b',
-              fontWeight: '500'
-            }}>
-              Matchweek {matchWeek.matchweek}
-            </span>
-          </div>
 
           {/* Sticky Header for Mobile */}
           <StickyHeader 
@@ -296,7 +273,7 @@ const HomePage: React.FC = () => {
                 key={dayIndex}
                 id={`group-${dayIndex}`}
                 date={dayGroup.date}
-                time={dayGroup.commonTime}
+                matchweek={dayGroup.matchweek}
                 ref={(el) => { groupRefs.current[dayIndex] = el; }}
               >
                 {/* Time slots within the day */}
