@@ -255,36 +255,32 @@ const HomePage: React.FC = () => {
         <div className="wrap" style={{ position: 'relative' }}>
           <h1 style={{ marginTop: 0 }}>Premier League TV Schedule (UK)</h1>
           
-          {/* Compact Matchweek Info */}
+          {/* Simplified Fixture Grouping Bar */}
           <div 
             style={{ 
               background: matchWeek.hasToday ? '#f8fafc' : '#fafaf9', 
               border: '1px solid #e2e8f0',
               borderRadius: '6px', 
-              padding: '12px 16px', 
+              padding: '10px 14px', 
               marginBottom: '16px',
-              fontSize: '14px'
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              fontSize: '13px'
             }}
           >
-            <div style={{ 
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '12px'
+            <span style={{ 
+              color: '#64748b',
+              fontWeight: '500'
             }}>
-              <span style={{ 
-                color: '#64748b',
-                fontWeight: '500'
-              }}>
-                Matchweek {matchWeek.matchweek} • {matchWeek.fixtures.length} match{matchWeek.fixtures.length === 1 ? '' : 'es'}
-              </span>
-              <span style={{ 
-                color: '#94a3b8',
-                fontSize: '12px'
-              }}>
-                {matchWeek.dateRange}
-              </span>
-            </div>
+              {matchWeek.dateRange}
+            </span>
+            <span style={{ 
+              color: '#64748b',
+              fontWeight: '500'
+            }}>
+              Matchweek {matchWeek.matchweek}
+            </span>
           </div>
 
           {/* Sticky Header for Mobile */}
@@ -402,51 +398,61 @@ const HomePage: React.FC = () => {
                           </div>
                         </div>
                         
-                        {/* Broadcaster Info - Compact */}
+                        {/* Broadcaster Info - Mobile Optimized */}
                         <div className="broadcaster-info-compact" style={{
                           display: 'flex',
                           alignItems: 'center',
                           gap: '8px',
                           flexShrink: 0
                         }}>
-                          {blackoutIds.includes(fixture.id) ? (
-                            <span className="provider blackout" style={{
-                              fontSize: '12px',
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              background: '#fee2e2',
-                              color: '#dc2626'
-                            }}>🚫</span>
-                          ) : fixture.broadcaster ? (
-                            <span className="provider confirmed" style={{
-                              fontSize: '12px',
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              background: '#dcfce7',
-                              color: '#16a34a',
-                              fontWeight: '500'
-                            }}>{fixture.broadcaster}</span>
-                          ) : (
-                            <span className="tbd-text" style={{
-                              fontSize: '12px',
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              background: '#fef3c7',
-                              color: '#d97706'
-                            }}>TBD</span>
+                          {/* Hide broadcaster badges on mobile (screens <= 640px) */}
+                          {window.innerWidth > 640 && (
+                            <>
+                              {blackoutIds.includes(fixture.id) ? (
+                                <span className="provider blackout" style={{
+                                  fontSize: '12px',
+                                  padding: '2px 6px',
+                                  borderRadius: '4px',
+                                  background: '#fee2e2',
+                                  color: '#dc2626'
+                                }}>🚫</span>
+                              ) : fixture.broadcaster ? (
+                                <span className="provider confirmed" style={{
+                                  fontSize: '12px',
+                                  padding: '2px 6px',
+                                  borderRadius: '4px',
+                                  background: '#dcfce7',
+                                  color: '#16a34a',
+                                  fontWeight: '500'
+                                }}>{fixture.broadcaster}</span>
+                              ) : (
+                                <span className="tbd-text" style={{
+                                  fontSize: '12px',
+                                  padding: '2px 6px',
+                                  borderRadius: '4px',
+                                  background: '#fef3c7',
+                                  color: '#d97706'
+                                }}>TBD</span>
+                              )}
+                            </>
                           )}
                           
+                          {/* Enhanced View button with bigger touch target for mobile */}
                           <Link 
                             to={generateSimpleMatchUrl(fixture)} 
                             style={{ 
                               color: '#6366f1', 
                               textDecoration: 'none',
-                              fontSize: '12px',
+                              fontSize: window.innerWidth <= 640 ? '13px' : '12px',
                               fontWeight: '500',
-                              padding: '4px 8px',
+                              padding: window.innerWidth <= 640 ? '8px 12px' : '4px 8px',
                               borderRadius: '4px',
                               border: '1px solid #6366f1',
-                              transition: 'all 0.2s'
+                              transition: 'all 0.2s',
+                              minHeight: window.innerWidth <= 640 ? '44px' : 'auto',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
                             }}
                             onMouseOver={(e) => {
                               e.currentTarget.style.background = '#6366f1';

@@ -59,7 +59,14 @@ const FixturesPage: React.FC = () => {
     }
 
     setFilteredFixtures(filtered);
+    
+    // Reset display count when filters change and update hasMore
+    setDisplayCount(50);
+    setHasMore(filtered.length > 50);
   }, [fixtures, teamFilter, matchweekFilter, competitionFilter, locationFilter]);
+
+  const [displayCount, setDisplayCount] = useState(50);
+  const [hasMore, setHasMore] = useState(false);
 
   const loadData = async () => {
     try {
@@ -76,6 +83,7 @@ const FixturesPage: React.FC = () => {
       
       setFixtures(fixturesData);
       setTeams(teamsData);
+      setHasMore(fixturesData.length > 50);
       
       // Update SEO meta tags for fixtures page
       const meta = generateFixturesMeta();
@@ -113,6 +121,12 @@ const FixturesPage: React.FC = () => {
     setMatchweekFilter('');
     setCompetitionFilter('');
     setLocationFilter('');
+  };
+
+  const loadMore = () => {
+    const newDisplayCount = Math.min(displayCount + 50, filteredFixtures.length);
+    setDisplayCount(newDisplayCount);
+    setHasMore(newDisplayCount < filteredFixtures.length);
   };
 
   if (loading) {
@@ -429,6 +443,15 @@ const FixturesPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Results Count */}
+          <div style={{ 
+            marginBottom: '16px', 
+            color: '#6b7280', 
+            fontSize: '14px' 
+          }}>
+            Showing {Math.min(displayCount, filteredFixtures.length)} of {filteredFixtures.length} fixtures
+          </div>
+
           {/* Fixtures List */}
           {filteredFixtures.length === 0 ? (
             <div style={{ 
@@ -442,80 +465,112 @@ const FixturesPage: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="fixtures-list">
-              {filteredFixtures.map(fixture => (
-                <div key={fixture.id} className="fixture-card">
-                  <div className="fixture-datetime">
-                    {new Date(fixture.kickoff_utc).toLocaleDateString('en-GB', {
-                      weekday: 'short',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      timeZone: 'Europe/London'
-                    })}
-                    {fixture.matchweek && (
-                      <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
-                        MW {fixture.matchweek}
+            <>
+              <div className="fixtures-list">
+                {filteredFixtures.slice(0, displayCount).map(fixture => (
+                  <div key={fixture.id} className="fixture-card">
+                    <div className="fixture-datetime">
+                      {new Date(fixture.kickoff_utc).toLocaleDateString('en-GB', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        timeZone: 'Europe/London'
+                      })}
+                      {fixture.matchweek && (
+                        <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
+                          MW {fixture.matchweek}
+                        </div>
+                      )}
+                    </div>
+                    <div className="fixture-teams">
+                      <div className="team">
+                        {fixture.home.crest && (
+                          <img 
+                            src={fixture.home.crest} 
+                            alt={`${fixture.home.name} crest`}
+                            style={{ width: '20px', height: '20px', marginRight: '8px', objectFit: 'contain' }}
+                          />
+                        )}
+                        <span className="team-name">{fixture.home.name}</span>
                       </div>
-                    )}
-                  </div>
-                  <div className="fixture-teams">
-                    <div className="team">
-                      {fixture.home.crest && (
-                        <img 
-                          src={fixture.home.crest} 
-                          alt={`${fixture.home.name} crest`}
-                          style={{ width: '20px', height: '20px', marginRight: '8px', objectFit: 'contain' }}
-                        />
-                      )}
-                      <span className="team-name">{fixture.home.name}</span>
+                      <div className="vs">vs</div>
+                      <div className="team away-team">
+                        <span className="team-name">{fixture.away.name}</span>
+                        {fixture.away.crest && (
+                          <img 
+                            src={fixture.away.crest} 
+                            alt={`${fixture.away.name} crest`}
+                            style={{ width: '20px', height: '20px', marginLeft: '8px', objectFit: 'contain' }}
+                          />
+                        )}
+                      </div>
                     </div>
-                    <div className="vs">vs</div>
-                    <div className="team away-team">
-                      <span className="team-name">{fixture.away.name}</span>
-                      {fixture.away.crest && (
-                        <img 
-                          src={fixture.away.crest} 
-                          alt={`${fixture.away.name} crest`}
-                          style={{ width: '20px', height: '20px', marginLeft: '8px', objectFit: 'contain' }}
-                        />
+                    <div className="broadcaster-info">
+                      {fixture.blackout?.is_blackout ? (
+                        <span className="provider blackout">🚫 Blackout</span>
+                      ) : fixture.providers_uk.length === 0 ? (
+                        <span className="tbd-text">TBD</span>
+                      ) : (
+                        fixture.providers_uk.map(provider => (
+                          <span 
+                            key={provider.id} 
+                            className={`provider confirmed ${provider.type}`}
+                            title={provider.type}
+                          >
+                            {provider.name}
+                          </span>
+                        ))
                       )}
                     </div>
+                    <div style={{ marginTop: '12px', textAlign: 'right' }}>
+                      <Link 
+                        to={generateMatchUrl(fixture)} 
+                        style={{ 
+                          color: '#6366f1', 
+                          textDecoration: 'underline', 
+                          fontSize: '0.9rem',
+                          fontWeight: '500'
+                        }}
+                      >
+                        Details →
+                      </Link>
+                    </div>
                   </div>
-                  <div className="broadcaster-info">
-                    {fixture.blackout?.is_blackout ? (
-                      <span className="provider blackout">🚫 Blackout</span>
-                    ) : fixture.providers_uk.length === 0 ? (
-                      <span className="tbd-text">TBD</span>
-                    ) : (
-                      fixture.providers_uk.map(provider => (
-                        <span 
-                          key={provider.id} 
-                          className={`provider confirmed ${provider.type}`}
-                          title={provider.type}
-                        >
-                          {provider.name}
-                        </span>
-                      ))
-                    )}
-                  </div>
-                  <div style={{ marginTop: '12px', textAlign: 'right' }}>
-                    <Link 
-                      to={generateMatchUrl(fixture)} 
-                      style={{ 
-                        color: '#6366f1', 
-                        textDecoration: 'underline', 
-                        fontSize: '0.9rem',
-                        fontWeight: '500'
-                      }}
-                    >
-                      Details →
-                    </Link>
-                  </div>
+                ))}
+              </div>
+              
+              {/* Load More Button */}
+              {hasMore && (
+                <div style={{ 
+                  textAlign: 'center', 
+                  marginTop: '32px',
+                  paddingTop: '24px',
+                  borderTop: '1px solid #e5e7eb'
+                }}>
+                  <button
+                    onClick={loadMore}
+                    style={{
+                      padding: '12px 24px',
+                      background: '#6366f1',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      minHeight: '44px',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#5856eb'}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#6366f1'}
+                  >
+                    Load More Fixtures ({filteredFixtures.length - displayCount} remaining)
+                  </button>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
         </div>
       </main>
